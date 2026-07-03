@@ -1,0 +1,105 @@
+{
+  "database": "sigaemobile",
+  "collections": {
+    "estudiantes": {
+      "description": "Usuarios del sistema, núcleo de autenticación.",
+      "fields": {
+        "_id": { "type": "ObjectId", "description": "ID único generado por MongoDB." },
+        "ci": { "type": "String", "unique": true, "index": true, "description": "Cédula de identidad, usada como credencial." },
+        "password_hash": { "type": "String", "description": "Contraseña encriptada con password_hash." },
+        "nombre": { "type": "String" },
+        "apellido": { "type": "String" },
+        "email": { "type": "String", "unique": true, "index": true },
+        "rol": { "type": "String", "enum": ["estudiante", "administrador", "docente"] },
+        "auth_token": { "type": "String", "index": true },
+        "reset_token": { "type": "String", "index": true },
+        "reset_token_expira": { "type": "Date" },
+        "fecha_registro": { "type": "Date" },
+        "activo": { "type": "Boolean", "default": true }
+      },
+      "indexes": [
+        { "ci": 1 },
+        { "email": 1 },
+        { "auth_token": 1 },
+        { "reset_token": 1 }
+      ]
+    },
+    "notas": {
+      "description": "Calificaciones finales de los estudiantes.",
+      "fields": {
+        "_id": { "type": "ObjectId" },
+        "ci_estudiante": { "type": "String", "reference": "estudiantes.ci", "index": true },
+        "codigo_materia": { "type": "String", "reference": "materias.codigo" },
+        "periodo": { "type": "String", "reference": "periodos_academicos.nombre" },
+        "nota_final": { "type": "Double" },
+        "estado": { "type": "String", "enum": ["Aprobado", "Reprobado", "En curso"] },
+        "fecha_registro": { "type": "Date" }
+      },
+      "indexes": [
+        { "ci_estudiante": 1, "periodo": 1 },
+        { "codigo_materia": 1, "periodo": 1 }
+      ]
+    },
+    "inscripciones": {
+      "description": "Relación estudiantes-materias por período.",
+      "fields": {
+        "_id": { "type": "ObjectId" },
+        "ci_estudiante": { "type": "String", "reference": "estudiantes.ci" },
+        "codigo_materia": { "type": "String", "reference": "materias.codigo" },
+        "periodo": { "type": "String", "reference": "periodos_academicos.nombre" },
+        "fecha_inscripcion": { "type": "Date" },
+        "estatus": { "type": "String", "enum": ["Inscrito", "Pendiente", "Retirado"] },
+        "seccion": { "type": "String" },
+        "turno": { "type": "String" }
+      },
+      "indexes": [
+        { "ci_estudiante": 1, "periodo": 1 },
+        { "codigo_materia": 1, "periodo": 1 }
+      ]
+    },
+    "buzon_sugerencias": {
+      "description": "Feedback de los usuarios.",
+      "fields": {
+        "_id": { "type": "ObjectId" },
+        "tipo": { "type": "String", "enum": ["Sugerencia", "Queja", "Reclamo"] },
+        "contenido": { "type": "String" },
+        "usuario_ci": { "type": "String", "description": "Anónimo o CI del estudiante" },
+        "fecha_registro": { "type": "Date" },
+        "estatus": { "type": "String", "enum": ["Pendiente Por Revisar", "En Proceso", "Resuelto"] }
+      }
+    },
+    "notificaciones": {
+      "description": "Comunicados del sistema.",
+      "fields": {
+        "_id": { "type": "ObjectId" },
+        "titulo": { "type": "String" },
+        "mensaje": { "type": "String" },
+        "destino": { "type": "String", "enum": ["todos", "estudiantes", "docentes"] },
+        "remitente": { "type": "String" },
+        "fecha_envio": { "type": "Date" },
+        "leida_por": { "type": "Array", "items": "String", "description": "Lista de CIs que han leído la notificación." }
+      }
+    },
+    "materias": {
+      "description": "Catálogo de materias ofrecidas.",
+      "fields": {
+        "_id": { "type": "ObjectId" },
+        "codigo": { "type": "String", "unique": true, "index": true },
+        "nombre": { "type": "String" },
+        "creditos": { "type": "Int" },
+        "departamento": { "type": "String" },
+        "descripcion": { "type": "String" }
+      }
+    },
+    "periodos_academicos": {
+      "description": "Períodos lectivos.",
+      "fields": {
+        "_id": { "type": "ObjectId" },
+        "nombre": { "type": "String", "unique": true, "index": true },
+        "fecha_inicio": { "type": "Date" },
+        "fecha_fin": { "type": "Date" },
+        "activo": { "type": "Boolean", "default": false }
+      }
+    }
+  }
+}
